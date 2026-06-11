@@ -1,4 +1,4 @@
-from flask import Flask
+from flask import Flask, render_template, request
 from app.database.db import db
 from app.routes.auth import (
     caregiver_signup,
@@ -29,9 +29,9 @@ from app.routes.assistant import ask_assistant
 with app.app_context():
     db.create_all()
 
-@app.route('/')
-def home():
-    return "MemoGlow AI Running Successfully"
+# @app.route('/')
+# def home():
+#     return "MemoGlow AI Running Successfully"
 
 app.add_url_rule(
     '/caregiver/signup',
@@ -83,5 +83,57 @@ app.add_url_rule(
     view_func=ask_assistant,
     methods=['POST']
 )
+@app.route("/")
+def home():
+    return render_template("home.html")
+
+
+@app.route("/role")
+def role():
+    return render_template("role_selection.html")
+
+
+from flask import request
+
+@app.route("/login")
+def login():
+
+    role = request.args.get("role")
+
+    return render_template(
+        "login.html",
+        role=role
+    )
+
+@app.route("/signup")
+def signup():
+    return render_template("signup.html")
+
+
+@app.route("/caregiver/dashboard")
+def caregiver_dashboard():
+    return render_template("caregiver_dashboard.html")
+
+
+@app.route("/patient/dashboard")
+def patient_dashboard():
+    return render_template("patient_dashboard.html")
+
+
+@app.route("/assistant")
+def assistant_page():
+    return render_template("assistant.html")
+@app.route("/add-memory")
+def add_memory_page():
+    return render_template("add_memory.html")
+@app.route("/add-reminder")
+def add_reminder_page():
+    return render_template("add_reminder.html")
+@app.route("/memory-timeline")
+def memory_timeline_page():
+    return render_template("memory_timeline.html")
+@app.route("/family-recognition")
+def family_recognition():
+    return render_template("family_recognition.html")
 if __name__ == '__main__':
     app.run(debug=True)

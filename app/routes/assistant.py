@@ -1,7 +1,8 @@
 from flask import request, jsonify
-
 from app.models.memory import Memory
 from app.services.gemini_service import ask_gemini
+from app.services.rag_service import create_embeddings
+import numpy as np
 
 
 def ask_assistant():
@@ -15,15 +16,43 @@ def ask_assistant():
         patient_id=patient_id
     ).all()
 
-    context = "\n".join(
-        [memory.memory_text for memory in memories]
+    memory_texts = [
+        memory.memory_text
+        for memory in memories
+    ]
+
+    if not memory_texts:
+        return jsonify({
+            "answer": "No memories found."
+        })
+
+    memory_embeddings = create_embeddings(
+        memory_texts
     )
 
+    question_embedding = create_embeddings(
+        [question]
+    )[0]
+
+    similarities = np.dot(
+        memory_embeddings,
+        question_embedding
+    )
+
+    best_match_index = np.argmax(
+        similarities
+    )
+
+    relevant_memory = memory_texts[
+        best_match_index
+    ]
+
     answer = ask_gemini(
-        context,
+        relevant_memory,
         question
     )
 
     return jsonify({
+        "retrieved_memory": relevant_memory,
         "answer": answer
     })
