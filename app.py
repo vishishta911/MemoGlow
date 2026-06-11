@@ -161,7 +161,8 @@ def patient_dashboard():
 
     return render_template(
         "patient_dashboard.html",
-        patient_name=session.get("patient_name")
+        patient_name=session.get("patient_name"),
+        patient_id=session.get("patient_id")
     )
 
 
