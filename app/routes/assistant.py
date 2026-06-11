@@ -1,4 +1,4 @@
-from flask import request, jsonify
+from flask import request, jsonify, session
 from app.models.memory import Memory
 from app.services.gemini_service import ask_gemini
 from app.services.rag_service import create_embeddings
@@ -7,9 +7,14 @@ import numpy as np
 
 def ask_assistant():
 
+    if "patient_id" not in session:
+        return jsonify({
+            "answer": "Please login first."
+        }), 401
+
     data = request.get_json()
 
-    patient_id = data.get("patient_id")
+    patient_id = session["patient_id"]
     question = data.get("question")
 
     memories = Memory.query.filter_by(

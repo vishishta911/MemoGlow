@@ -1,3 +1,4 @@
+from flask import session
 from flask import request, jsonify
 from werkzeug.security import generate_password_hash
 import random
@@ -101,6 +102,9 @@ def caregiver_login():
             "message": "Invalid password"
         }), 401
 
+    session["caregiver_id"] = caregiver.id
+    session["caregiver_name"] = caregiver.name
+
     return jsonify({
         "message": "Login Successful",
         "caregiver_id": caregiver.id,
@@ -129,6 +133,9 @@ def patient_login():
         return jsonify({
             "message": "Invalid password"
         }), 401
+
+    session["patient_id"] = patient.id
+    session["patient_name"] = patient.name
 
     return jsonify({
         "message": "Login Successful",

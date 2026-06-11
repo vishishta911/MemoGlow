@@ -43,22 +43,75 @@
         </div>
 
     </div>
+    <h3 class="mt-4">My Patients</h3>
 
-    <div class="mt-5">
+        <div class="row">
 
-        <a href="/add-memory" class="btn btn-primary me-2">
+        {% for patient in patients %}
+
+        <div class="col-md-4">
+
+            <div class="card shadow mb-3">
+
+                <div class="card-body">
+
+                    <h5>{{ patient.name }}</h5>
+
+                    <p>
+                        Age: {{ patient.age }}<br>
+                        Stage: {{ patient.dementia_stage }}
+                    </p>
+
+                    <a href="/memory-timeline"
+                    class="btn btn-primary btn-sm">
+                    Timeline
+                    </a>
+
+                </div>
+
+            </div>
+
+        </div>
+
+        {% endfor %}
+
+</div>
+
+    <div class="row">
+
+{% for patient in patients %}
+
+<div class="col-md-4">
+
+    <div class="card shadow p-3 mb-3">
+
+        <h5>{{ patient.name }}</h5>
+
+        <p>
+            Age: {{ patient.age }}<br>
+            Stage: {{ patient.dementia_stage }}
+        </p>
+        <a href="/patient-profile/{{ patient.id }}"
+            class="btn btn-warning btn-sm">
+            Profile
+        </a>
+        <a href="/add-memory/{{ patient.id }}"
+           class="btn btn-primary btn-sm">
             Add Memory
         </a>
 
-        <a href="/add-reminder" class="btn btn-success me-2">
+        <a href="/add-reminder/{{ patient.id }}"
+           class="btn btn-success btn-sm">
             Add Reminder
         </a>
 
-        <a href="/assistant" class="btn btn-dark">
-            Open AI Assistant
-        </a>
-
     </div>
+
+</div>
+
+{% endfor %}
+
+</div>
 
 </div>
 
