@@ -32,6 +32,8 @@ from app.models.caregiver import Caregiver
 from app.models.patient import Patient
 from app.models.connection_request import ConnectionRequest
 from app.models.memory import Memory
+from app.models.reminder import Reminder
+from app.models.family_member import FamilyMember
 
 app = Flask(__name__)
 
@@ -43,7 +45,7 @@ db.init_app(app)
 
 with app.app_context():
     db.create_all()
-
+    print(db.metadata.tables.keys())
 
 # ---------------- API ROUTES ----------------
 
@@ -107,7 +109,13 @@ app.add_url_rule(
     methods=['POST']
 )
 
+from app.routes.family import add_family_member
 
+app.add_url_rule(
+    "/family/add",
+    view_func=add_family_member,
+    methods=["POST"]
+)
 # ---------------- WEB PAGES ----------------
 
 @app.route("/")
