@@ -1,10 +1,12 @@
 {% include 'navbar.html' %}
+
 <!DOCTYPE html>
 <html>
 <head>
     <title>Memory Timeline - MemoGlow</title>
 
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"
+          rel="stylesheet">
 </head>
 
 <body class="bg-light">
@@ -12,19 +14,47 @@
 <div class="container mt-5">
 
     <div class="d-flex justify-content-between align-items-center mb-4">
+
         <h1>🧠 Memory Timeline</h1>
 
         <a href="/patient/dashboard"
            class="btn btn-secondary">
             Back to Dashboard
         </a>
+
     </div>
+
+    <!-- Search Box -->
+
+    <div class="input-group mb-4">
+
+        <input
+            type="text"
+            id="searchMemory"
+            class="form-control"
+            placeholder="🔍 Search memories..."
+            onkeyup="filterMemories()">
+
+        <button
+            class="btn btn-primary"
+            onclick="filterMemories()">
+            Search
+        </button>
+
+    </div>
+
+    <!-- Timeline -->
 
     <div id="timeline">
 
         <div class="text-center mt-5">
+
             <div class="spinner-border"></div>
-            <p class="mt-2">Loading memories...</p>
+
+            <p class="mt-2">
+                Loading memories...
+            </p>
+
         </div>
 
     </div>
@@ -32,6 +62,8 @@
 </div>
 
 <script>
+
+let allMemories = [];
 
 async function loadTimeline() {
 
@@ -41,50 +73,12 @@ async function loadTimeline() {
             "/memory/timeline/1"
         );
 
-        const memories = await response.json();
+        const memories =
+            await response.json();
 
-        let html = "";
+        allMemories = memories;
 
-        if(memories.length === 0){
-
-            html = `
-            <div class="alert alert-warning">
-                No memories found.
-            </div>
-            `;
-
-        } else {
-
-            memories.forEach(memory => {
-
-                html += `
-                <div class="card shadow mb-3">
-
-                    <div class="card-body">
-
-                        <h5 class="card-title">
-                            ${memory.category}
-                        </h5>
-
-                        <p class="card-text">
-                            ${memory.memory}
-                        </p>
-
-                        <small class="text-muted">
-                            ${memory.created_at}
-                        </small>
-
-                    </div>
-
-                </div>
-                `;
-
-            });
-
-        }
-
-        document.getElementById("timeline").innerHTML =
-            html;
+        renderTimeline(memories);
 
     }
 
@@ -96,9 +90,86 @@ async function loadTimeline() {
             Failed to load memories.
         </div>
         `;
+    }
+}
 
+function renderTimeline(memories) {
+
+    let html = "";
+
+    if(memories.length === 0){
+
+        html = `
+        <div class="alert alert-warning">
+            No memories found.
+        </div>
+        `;
     }
 
+    else {
+
+        memories.forEach(memory => {
+
+            let badgeColor = "primary";
+
+            if(memory.category === "Family")
+                badgeColor = "success";
+
+            else if(memory.category === "Health")
+                badgeColor = "danger";
+
+            else if(memory.category === "Friends")
+                badgeColor = "warning";
+
+            else if(memory.category === "Events")
+                badgeColor = "info";
+
+            html += `
+            <div class="card shadow mb-3">
+
+                <div class="card-body">
+
+                    <span class="badge bg-${badgeColor}">
+                        ${memory.category}
+                    </span>
+
+                    <p class="mt-3 mb-2">
+                        ${memory.memory}
+                    </p>
+
+                    <small class="text-muted">
+                        📅 ${memory.created_at}
+                    </small>
+
+                </div>
+
+            </div>
+            `;
+        });
+    }
+
+    document.getElementById("timeline").innerHTML =
+        html;
+}
+
+function filterMemories() {
+
+    const keyword =
+        document.getElementById("searchMemory")
+        .value
+        .toLowerCase();
+
+    const filtered =
+        allMemories.filter(memory =>
+
+            memory.memory.toLowerCase().includes(keyword)
+
+            ||
+
+            memory.category.toLowerCase().includes(keyword)
+        );
+
+    renderTimeline(filtered);
 }
 
 loadTimeline();

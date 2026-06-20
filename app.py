@@ -34,7 +34,11 @@ from app.models.connection_request import ConnectionRequest
 from app.models.memory import Memory
 from app.models.reminder import Reminder
 from app.models.family_member import FamilyMember
-
+from app.routes.family import (
+    add_family_member,
+    get_family_members,
+    delete_family_member
+)
 app = Flask(__name__)
 
 app.config['SECRET_KEY'] = 'memoglow_secret_key_2026'
@@ -111,10 +115,24 @@ app.add_url_rule(
 
 from app.routes.family import add_family_member
 
+# Family APIs
+
 app.add_url_rule(
     "/family/add",
     view_func=add_family_member,
     methods=["POST"]
+)
+
+app.add_url_rule(
+    "/family/all/<int:patient_id>",
+    view_func=get_family_members,
+    methods=["GET"]
+)
+
+app.add_url_rule(
+    "/family/delete/<int:member_id>",
+    view_func=delete_family_member,
+    methods=["DELETE"]
 )
 # ---------------- WEB PAGES ----------------
 
@@ -154,10 +172,33 @@ def caregiver_dashboard():
         caregiver_id=session["caregiver_id"]
     ).all()
 
+    patient_count = len(patients)
+
+    patient_ids = [
+        patient.id
+        for patient in patients
+    ]
+
+    memory_count = Memory.query.filter(
+        Memory.patient_id.in_(patient_ids)
+    ).count()
+
+    reminder_count = Reminder.query.filter(
+        Reminder.patient_id.in_(patient_ids)
+    ).count()
+
+    family_count = FamilyMember.query.filter(
+        FamilyMember.patient_id.in_(patient_ids)
+    ).count()
+
     return render_template(
         "caregiver_dashboard.html",
         caregiver_name=session.get("caregiver_name"),
-        patients=patients
+        patients=patients,
+        patient_count=patient_count,
+        memory_count=memory_count,
+        reminder_count=reminder_count,
+        family_count=family_count
     )
 
 
@@ -211,16 +252,23 @@ def memory_timeline_page():
 
     return render_template(
         "memory_timeline.html",
-        memories=memories
+        memories=memories,
+        patient_id=session["patient_id"]
     )
 
 
-@app.route("/family-recognition")
-def family_recognition():
+# @app.route("/family-recognition")
+# def family_recognition():
+#     return render_template(
+#         "family_recognition.html"
+#     )
+@app.route("/family-recognition/<int:patient_id>")
+def family_recognition(patient_id):
+
     return render_template(
-        "family_recognition.html"
+        "family_recognition.html",
+        patient_id=patient_id
     )
-
 
 @app.route("/logout")
 def logout():
@@ -248,6 +296,9 @@ def patient_profile(patient_id):
     reminder_count = Reminder.query.filter_by(
         patient_id=patient.id
     ).count()
+    family_count = FamilyMember.query.filter_by(
+    patient_id=patient.id
+    ).count()
 
     recent_memories = Memory.query.filter_by(
         patient_id=patient.id
@@ -256,12 +307,13 @@ def patient_profile(patient_id):
     ).limit(5).all()
 
     return render_template(
-        "patient_profile.html",
-        patient=patient,
-        caregiver=caregiver,
-        memory_count=memory_count,
-        reminder_count=reminder_count,
-        recent_memories=recent_memories
-    )
+    "patient_profile.html",
+    patient=patient,
+    caregiver=caregiver,
+    memory_count=memory_count,
+    reminder_count=reminder_count,
+    family_count=family_count,
+    recent_memories=recent_memories
+)
 if __name__ == "__main__":
     app.run(debug=True)

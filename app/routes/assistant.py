@@ -3,6 +3,8 @@ from app.models.memory import Memory
 from app.services.gemini_service import ask_gemini
 from app.services.rag_service import create_embeddings
 import numpy as np
+from app.models.patient import Patient
+from app.models.family_member import FamilyMember
 
 
 def ask_assistant():
@@ -15,6 +17,11 @@ def ask_assistant():
     data = request.get_json()
 
     patient_id = session["patient_id"]
+    patient = Patient.query.get(patient_id)
+
+    family_members = FamilyMember.query.filter_by(
+        patient_id=patient_id
+    ).all()
     question = data.get("question")
 
     memories = Memory.query.filter_by(
@@ -51,9 +58,28 @@ def ask_assistant():
     relevant_memory = memory_texts[
         best_match_index
     ]
+    family_context = ""
+    for member in family_members:
+
+        family_context += (
+            f"{member.name} "
+            f"is the patient's "
+            f"{member.relationship}. "
+        )
+    full_context = f"""
+    Patient Name: {patient.name}
+    Age: {patient.age}
+    Dementia Stage: {patient.dementia_stage}
+
+    Family Members:
+    {family_context}
+
+    Relevant Memory:
+    {relevant_memory}
+    """
 
     answer = ask_gemini(
-        relevant_memory,
+        full_context,
         question
     )
 

@@ -30,7 +30,10 @@
             onclick="askAssistant()">
             Ask MemoGlow
         </button>
-
+            <button class="btn btn-secondary"
+            onclick="startVoice()">
+            🎤 Speak
+        </button>
     </div>
 
     <div class="card shadow p-4 mt-4">
@@ -90,7 +93,20 @@ async function askAssistant() {
         ${data.answer}
         `;
 }
+function startVoice() {
 
+    const recognition =
+        new webkitSpeechRecognition();
+
+    recognition.onresult = function(event) {
+
+        document.getElementById("question")
+            .value =
+            event.results[0][0].transcript;
+    };
+
+    recognition.start();
+}
 </script>
 
 </body>
